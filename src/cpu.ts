@@ -4,28 +4,109 @@ import { Keypad } from "./keypad.ts";
 export const VF = 0xF;
 export const WIDTH = 64;
 export const HEIGHT = 32;
-export const FONT_SET = new Uint8Array([
-  0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
-  0x20, 0x60, 0x20, 0x20, 0x70, // 1
-  0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
-  0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
-  0x90, 0x90, 0xF0, 0x10, 0x10, // 4
-  0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
-  0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
-  0xF0, 0x10, 0x20, 0x40, 0x40, // 7
-  0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
-  0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
-  0xF0, 0x90, 0xF0, 0x90, 0x90, // A
-  0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
-  0xF0, 0x80, 0x80, 0x80, 0xF0, // C
-  0xE0, 0x90, 0x90, 0x90, 0xE0, // D
-  0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
-  0xF0, 0x80, 0xF0, 0x80, 0x80, // F
-]);
+export const FONT_SET = new Uint8Array(
+  [
+    0b11110000,
+    0b10010000,
+    0b10010000,
+    0b10010000,
+    0b11110000,
+
+    0b00100000,
+    0b01100000,
+    0b00100000,
+    0b00100000,
+    0b01110000,
+
+    0b11110000,
+    0b00010000,
+    0b11110000,
+    0b10000000,
+    0b11110000,
+
+    0b11110000,
+    0b00010000,
+    0b11110000,
+    0b00010000,
+    0b11110000,
+
+    0b10010000,
+    0b10010000,
+    0b11110000,
+    0b00010000,
+    0b00010000,
+
+    0b11110000,
+    0b10000000,
+    0b11110000,
+    0b00010000,
+    0b11110000,
+
+    0b11110000,
+    0b10000000,
+    0b11110000,
+    0b10010000,
+    0b11110000,
+
+    0b11110000,
+    0b00010000,
+    0b00100000,
+    0b01000000,
+    0b01000000,
+
+    0b11110000,
+    0b10010000,
+    0b11110000,
+    0b10010000,
+    0b11110000,
+
+    0b11110000,
+    0b10010000,
+    0b11110000,
+    0b00010000,
+    0b11110000,
+
+    0b11110000,
+    0b10010000,
+    0b11110000,
+    0b10010000,
+    0b10010000,
+
+    0b11100000,
+    0b10010000,
+    0b11100000,
+    0b10010000,
+    0b11100000,
+
+    0b11110000,
+    0b10000000,
+    0b10000000,
+    0b10000000,
+    0b11110000,
+
+    0b11100000,
+    0b10010000,
+    0b10010000,
+    0b10010000,
+    0b11100000,
+
+    0b11110000,
+    0b10000000,
+    0b11110000,
+    0b10000000,
+    0b11110000,
+
+    0b11110000,
+    0b10000000,
+    0b11110000,
+    0b10000000,
+    0b10000000,
+  ],
+);
 
 export class CPU {
-  #i_pc_sp_dt = new ArrayBuffer(2 + 2 + 1 + 1);
-  #view = new DataView(this.#i_pc_sp_dt);
+  #i_pc_sp_dt_st = new ArrayBuffer(2 + 2 + 1 + 1 + 1);
+  #view = new DataView(this.#i_pc_sp_dt_st);
 
   /** index register */
   get i(): number {
@@ -63,6 +144,15 @@ export class CPU {
     this.#view.setUint8(5, dt);
   }
 
+  /** sound timer */
+  get st(): number {
+    return this.#view.getUint8(6);
+  }
+
+  set st(st: number) {
+    this.#view.setUint8(6, st);
+  }
+
   /** memory */
   mem = new Uint8Array(4096);
   /** registers */
@@ -94,7 +184,7 @@ export class CPU {
     this.process(opcode);
   }
 
-  decrement() {
+  step() {
     if (this.dt > 0) {
       this.dt -= 1;
     }
@@ -129,6 +219,7 @@ export class CPU {
         break;
 
       // CALL NNN
+
       case 0x2:
         this.stack[this.sp] = this.pc;
         this.sp += 1;
@@ -136,26 +227,31 @@ export class CPU {
         break;
 
       // SE VX NN
+
       case 0x3:
         this.pc += vx === nn ? 2 : 0;
         break;
 
       // SNE VX NN
+
       case 0x4:
         this.pc += vx !== nn ? 2 : 0;
         break;
 
       // SE VX VY
+
       case 0x5:
         this.pc += vx === vy ? 2 : 0;
         break;
 
       // LD VX NN
+
       case 0x6:
         this.v[x] = nn;
         break;
 
       // ADD VX NN
+
       case 0x7:
         this.v[x] += nn;
         break;
@@ -223,26 +319,31 @@ export class CPU {
         break;
 
       // SNE VX VY
+
       case 0x9:
         this.pc += vx !== vy ? 2 : 0;
         break;
 
       // LD I NNN
+
       case 0xA:
         this.i = nnn;
         break;
 
       // JP V0 NNN
+
       case 0xB:
         this.pc = nnn + this.v[0];
         break;
 
       // RND VX NN
+
       case 0xC:
         this.v[x] = Math.floor(Math.random() * 0xFF) & nn;
         break;
 
       // DRW VX VY N
+
       case 0xD:
         this.v[VF] = this.disp.drw(vx, vy, this.mem.slice(this.i, this.i + n))
           ? 1
@@ -281,6 +382,11 @@ export class CPU {
         // LD DT VX
         if (nn === 0x15) {
           this.dt = vx;
+        }
+
+        // LD ST VX
+        if (nn === 0x18) {
+          this.st = vx;
         }
 
         // ADD I VX

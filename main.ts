@@ -33,7 +33,7 @@ const interval = setInterval(() => {
   for (let i = 0; i < 10; i++) {
     cpu.cycle();
   }
-  cpu.decrement();
+  cpu.step();
 
   for (const event of EventLoop.Step()) {
     switch (event.type) {
