@@ -188,6 +188,10 @@ export class CPU {
     if (this.dt > 0) {
       this.dt -= 1;
     }
+
+    if (this.st > 0) {
+      this.st -= 1;
+    }
   }
 
   process(opcode: number) {

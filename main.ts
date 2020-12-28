@@ -23,7 +23,7 @@ const win = new Window(WIDTH, HEIGHT);
 win.setInnerSize(SIZE);
 win.setMinInnerSize(SIZE);
 win.setMaxInnerSize(SIZE);
-win.setTitle("CRISP8");
+win.setTitle("CRISP-8");
 
 await load(
   Deno.args[0] ?? fromFileUrl(dirname(import.meta.url)) + "/roms/BRIX",
