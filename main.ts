@@ -1,9 +1,10 @@
-import { EventLoop, Window } from "./deps.ts";
+import { dirname, EventLoop, fromFileUrl, Window } from "./deps.ts";
 
 import { CPU, HEIGHT, WIDTH } from "./src/cpu.ts";
 
-async function load(name: string) {
-  const data = await Deno.readFile(`roms/${name}`);
+async function load(path: string) {
+  const data = await Deno.readFile(path);
+
   const rom = new DataView(data.buffer, 0, data.byteLength);
   cpu.reset();
   for (let i = 0; i < rom.byteLength; i++) {
@@ -11,7 +12,9 @@ async function load(name: string) {
   }
 }
 
-const SCALE = 8;
+const CLOCK = 1000 / 60;            // 60Hz
+const SCALE = 8;                    // Scale 8x
+const COLOR = [255, 255, 255, 255]; // White
 const SIZE = { logical: { width: WIDTH * SCALE, height: HEIGHT * SCALE } };
 
 const cpu = new CPU();
@@ -22,7 +25,9 @@ win.setMinInnerSize(SIZE);
 win.setMaxInnerSize(SIZE);
 win.setTitle("CRISP8");
 
-await load("TETRIS");
+await load(
+  Deno.args[0] ?? fromFileUrl(dirname(import.meta.url)) + "/roms/BRIX",
+);
 
 const interval = setInterval(() => {
   for (let i = 0; i < 10; i++) {
@@ -56,10 +61,10 @@ const interval = setInterval(() => {
         }
         break;
       case "redrawRequested":
-        win.drawFrame(cpu.disp.toRGBA());
+        win.drawFrame(cpu.disp.toRGBA(...COLOR));
         win.renderFrame();
         win.requestRedraw();
         break;
     }
   }
-}, 1000 / 60);
+}, CLOCK);
