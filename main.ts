@@ -1,4 +1,4 @@
-import { dirname, EventLoop, fromFileUrl, Window } from "./deps.ts";
+import { dirname, fromFileUrl, Pane } from "./deps.ts";
 
 import { CPU, HEIGHT, WIDTH } from "./src/cpu.ts";
 
@@ -18,12 +18,12 @@ const COLOR = [255, 255, 255, 255]; // White
 const SIZE = { logical: { width: WIDTH * SCALE, height: HEIGHT * SCALE } };
 
 const cpu = new CPU();
-const win = new Window(WIDTH, HEIGHT);
+const pane = new Pane(WIDTH, HEIGHT);
 
-win.setInnerSize(SIZE);
-win.setMinInnerSize(SIZE);
-win.setMaxInnerSize(SIZE);
-win.setTitle("CRISP-8");
+pane.setInnerSize(SIZE);
+pane.setMinInnerSize(SIZE);
+pane.setMaxInnerSize(SIZE);
+pane.setTitle("CRISP-8");
 
 await load(
   Deno.args[0] ?? fromFileUrl(dirname(import.meta.url)) + "/roms/BRIX",
@@ -35,7 +35,7 @@ const interval = setInterval(() => {
   }
   cpu.step();
 
-  for (const event of EventLoop.Step()) {
+  for (const event of Pane.Step()) {
     switch (event.type) {
       case "windowEvent":
         switch (event.value.event.type) {
@@ -44,7 +44,7 @@ const interval = setInterval(() => {
             Deno.exit();
             break;
           case "resized":
-            win.resizeFrame(
+            pane.resizeFrame(
               event.value.event.value.width,
               event.value.event.value.height,
             );
@@ -55,15 +55,14 @@ const interval = setInterval(() => {
         if (event.value.event.type === "key") {
           cpu.keyp.handle(
             event.value.event.value.virtualKeycode!,
-            //@ts-ignore
-            event.value.event.value.state === "Pressed",
+            event.value.event.value.state === "pressed",
           );
         }
         break;
       case "redrawRequested":
-        win.drawFrame(cpu.disp.toRGBA(...COLOR));
-        win.renderFrame();
-        win.requestRedraw();
+        pane.drawFrame(cpu.disp.toRGBA(...COLOR));
+        pane.renderFrame();
+        pane.requestRedraw();
         break;
     }
   }
